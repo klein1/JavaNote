@@ -1,4 +1,4 @@
-#### Java开发环境：JDK（Java Development Kit）
+## Java开发环境：JDK（Java Development Kit）
 
 bin：可执行程序（javac编译器、java运行工具、javadoc文档生成工具、jar打包工具等）
 
@@ -12,7 +12,7 @@ lib：java类库（供JDK使用，工具）
 
 
 
-#### Java运行环境：JRE（Java Runtime Environment）
+## Java运行环境：JRE（Java Runtime Environment）
 
 bin：可执行程序（等同于 jdk/bin）、DLL
 
@@ -26,7 +26,7 @@ lib：java类库（供JVM使用，含标准类库、扩展类）
 
 
 
-### Oracle JDK 和 OpenJDK 的对比
+## Oracle JDK 和 OpenJDK 的对比
 
 - OpenJDK 项目主要基于 Sun 捐赠的 HotSpot 源代码，完全开源；
 - Oracle JDK 是 OpenJDK 的一个实现，并不是完全开源的（含商业功能）；
