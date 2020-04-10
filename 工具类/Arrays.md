@@ -35,7 +35,7 @@ void Arrays.binarySearch(T[] a, T key, Comparator<? super T> c);
 void Arrays.binarySearch(T[] a, int fromIndex, int toIndex, T key, Comparator<? super T> c);
 ```
 
-#### （排序、查找没有boolean类型）
+#### （排序、查找中T没有boolean类型）
 
 
 
@@ -61,6 +61,17 @@ void Arrays.fill(T[] a, int fromIndex, int toIndex, T val)
 
 ```java
 List<T> Arrays.asList(T... a)
+```
+
+**传递的数组必须是对象数组，而不是基本类型。**
+
+```java
+String [] s= new String[]{
+    "dog", "lazy", "a", "over", "jumps", "fox", "brown", "quick", "A"
+};
+List<String> list = Arrays.asList(s);
+Collections.reverse(list);
+s=list.toArray(new String[0]);//没有传递任何参数的话返回的是Object类型数组
 ```
 
 
