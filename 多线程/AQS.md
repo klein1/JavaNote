@@ -28,6 +28,8 @@ AQS 是一个用来构建锁和同步器的框架。
 
 **Semaphore**
 
+执行 `acquire` 方法阻塞，直到有一个许可证可以获得然后拿走一个许可证；每个 `release` 方法增加一个许可证，这可能会释放一个阻塞的 acquire 方法。当然也可以一次拿取和释放多个许可。
+
 - 公平模式： 调用 acquire 的顺序就是获取许可证的顺序，遵循 FIFO；
 - 非公平模式： 抢占式的。
 
@@ -35,9 +37,36 @@ AQS 是一个用来构建锁和同步器的框架。
 
 允许 count 个线程阻塞在一个地方，直至所有线程的任务都执行完毕。
 
+当线程使用countDown方法时，其实使用了`tryReleaseShared`方法以CAS的操作来减少state，直至state为0就代表所有的线程都调用了countDown方法。当调用await方法的时候，如果state不为0，就代表仍然有线程没有调用countDown方法，那么就把已经调用过countDown的线程都放入阻塞队列Park，并自旋CAS判断state == 0，直至最后一个线程调用了countDown，使得state == 0，于是阻塞的线程便判断成功，全部往下执行。
+
+两种用法：
+
+1. 某一线程在开始运行前等待 n 个线程执行完毕。将 CountDownLatch 的计数器初始化为 n ：`new CountDownLatch(n)`，每当一个任务线程执行完毕，就将计数器减 1 `countdownlatch.countDown()`，当计数器的值变为 0 时，在`CountDownLatch上 await()` 的线程就会被唤醒。一个典型应用场景就是启动一个服务时，主线程需要等待多个组件加载完毕，之后再继续执行。
+2. 实现多个线程开始执行任务的最大并行性。注意是并行性，不是并发，强调的是多个线程在某一时刻同时开始执行。类似于赛跑，将多个线程放到起点，等待发令枪响，然后同时开跑。做法是初始化一个共享的 `CountDownLatch` 对象，将其计数器初始化为 1 ：`new CountDownLatch(1)`，多个线程在开始执行任务前首先 `coundownlatch.await()`，当主线程调用 countDown() 时，计数器变为 0，多个线程同时被唤醒。
+
+不足：
+
+CountDownLatch 是一次性的，计数器的值只能在构造方法中初始化一次，之后没有任何机制再次对其设置值，当 CountDownLatch 使用完毕后，它不能再次被使用。
+
  **CyclicBarrier**
 
 让一组线程到达一个屏障（也可以叫同步点）时被阻塞，直到最后一个线程到达屏障时，屏障才会开门，所有被屏障拦截的线程才会继续干活。
+
+当线程数量也就是请求数量达到我们定义的数量时候， `await`方法之后的方法才被执行。
+
+构造函数`CyclicBarrier(int parties, Runnable barrierAction)`，用于在线程到达屏障时，优先执行`barrierAction`，方便处理更复杂的业务场景。
+
+应用场景：
+
+用于多线程计算数据，最后合并计算结果。
+
+
+
+#### CyclicBarrier 和 CountDownLatch 的区别
+
+1. CountDownLatch 是计数器，只能使用一次，而 CyclicBarrier 的计数器提供 reset 功能，可以多次使用。
+2. CountDownLatch: 一个或者多个线程，等待其他多个线程完成某件事情之后才能执行；CyclicBarrier : 多个线程互相等待，直到到达同一个同步点，再继续一起执行。
+3. CountDownLatch 是计数器，线程完成一个记录一个，只不过计数不是递增而是递减，而 CyclicBarrier 更像是一个阀门，需要所有线程都到达，阀门才能打开，然后继续执行。
 
 
 
@@ -54,3 +83,4 @@ tryRelease(int)//独占方式。尝试释放资源，成功则返回true，失�
 tryAcquireShared(int)//共享方式。尝试获取资源。负数表示失败；0表示成功，但没有剩余可用资源；正数表示成功，且有剩余资源。
 tryReleaseShared(int)//共享方式。尝试释放资源，成功则返回true，失败则返回false。
 ```
+
