@@ -20,6 +20,19 @@
 
 
 
+### 实现原理
+
+- ContentionList：锁竞争队列，存放所有竞争锁的线程
+- EntryList：竞争候选列表，有资格成为候选者来竞争锁的线程
+- WaitSet：等待集合
+- OnDeck：竞争候选者
+- Owner：竞争到锁资源的线程
+- !Owner：Owner 线程释放锁后状态
+
+在收到新的锁请求时首先自旋，可能抢占 OnDeck 线程锁资源，所以是非公平锁，提高了性能。
+
+
+
 ### Synchronized 和 ReenTrantLock 的对比
 
 **① 两者都是可重入锁**
@@ -32,9 +45,17 @@ synchronized 是依赖于 JVM 实现的，虚拟机团队在 JDK1.6 为 synchron
 
 **③ ReenTrantLock 比 synchronized 增加了一些高级功能**
 
-- **中断等待锁的线程的机制**。
+- **可响应中断**
 
-  通过`lock.lockInterruptibly()`来实现这个机制。
+  `lock.lockInterruptibly()`、`lock.interrupt()`
+
+- **可轮询锁**
+
+  通过`tryLock()`获取锁，有则返回 true，否则返回 false。
+
+- **定时锁**
+
+  `tryLock(long time, TimeUnit unit)`，处于休眠状态直到返回值。
 
 - **ReenTrantLock可以指定是公平锁还是非公平锁，而synchronized只能是非公平锁。**
 
